@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "pino": "^10.3.0"
+  },
+  "devDependencies": {
+    "turbo": "^2.8.0"
+  }
+}
