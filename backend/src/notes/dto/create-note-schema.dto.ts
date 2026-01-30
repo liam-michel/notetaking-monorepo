@@ -12,3 +12,4 @@ export const CreateNoteSchema = z.object({
 });
 
 export class CreateNoteDto extends createZodDto(CreateNoteSchema) {}
+export type CreateNoteDtoType = z.infer<typeof CreateNoteSchema>;

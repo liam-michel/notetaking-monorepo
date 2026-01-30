@@ -7,8 +7,8 @@ export class NotesController {
   constructor(private readonly notesService: NotesService) {}
 
   @Get()
-  getNotes() {
-    return this.notesService.getNotes();
+  getAllNotes() {
+    return this.notesService.getAllNotes();
   }
   @Post()
   createNote(@Body() dto: CreateNoteDto) {
