@@ -3,7 +3,9 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
-    "moduleResolution": "node"
+    "moduleResolution": "node16",
+    "ignoreDeprecations": "6.0",
+    "module": "node16"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "__tests__"]
