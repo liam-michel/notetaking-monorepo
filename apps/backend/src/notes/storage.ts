@@ -1,5 +1,6 @@
 import { Note } from '@prisma/client';
-import { PrismaClient, type Prisma } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 import {
   IdInput,
   NoteCreateInput,
@@ -55,11 +56,13 @@ function getNotesPaginated(db: DbClient) {
     });
   };
 }
-export function createPrismaClient(connectionString: string) {
-  process.env.DATABASE_URL = connectionString; // inject env var dynamically
-  return new PrismaClient(); // no options needed
+export function createPrismaClient(connectionString: string): PrismaClient {
+  return new PrismaClient({
+    datasources: {
+      db: { url: connectionString },
+    } as Prisma.PrismaClientOptions['datasources'],
+  });
 }
-
 function wrapDb(db: DbClient): Omit<Storage, 'transaction'> {
   return {
     notes: {
