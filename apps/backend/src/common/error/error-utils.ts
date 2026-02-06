@@ -1,6 +1,5 @@
 import { Prisma } from '@prisma/client'
 import type { Logger } from 'pino'
-type UseCaseFunction<TInput, TOutput> = (input: TInput) => Promise<TOutput>
 
 type UseCaseExecutorDeps = {
   logger: Logger
@@ -8,15 +7,11 @@ type UseCaseExecutorDeps = {
 
 export function createUseCaseExecutor({ logger }: UseCaseExecutorDeps) {
   return {
-    execute: async function <TInput, TOutput>(
-      name: string,
-      useCase: UseCaseFunction<TInput, TOutput>,
-      input: TInput,
-    ): Promise<TOutput> {
+    execute: async function <TOutput>(name: string, useCasePromise: Promise<TOutput>): Promise<TOutput> {
       const startTime = Date.now()
       try {
-        logger.info({ msg: 'Executing use case', name, input })
-        const result = await useCase(input)
+        logger.info({ msg: 'Executing use case', name })
+        const result = await useCasePromise
         const duration = Date.now() - startTime
         logger.info({ msg: 'Use case executed successfully', name, duration })
         return result
@@ -25,13 +20,13 @@ export function createUseCaseExecutor({ logger }: UseCaseExecutorDeps) {
         //check for prisma errors
         if (error instanceof Prisma.PrismaClientKnownRequestError) {
           switch (error.code) {
-            case 'P2002': // Unique constraint failed
+            case 'P2002':
               throw new Error(`A record with this ${error.meta?.target || 'value'} already exists`, { cause: error })
-            case 'P2003': // Foreign key constraint failed
+            case 'P2003':
               throw new Error(`Related record not found for ${error.meta?.field_name || 'unknown field'}`, {
                 cause: error,
               })
-            case 'P2025': // Record not found
+            case 'P2025':
               throw new Error('The requested record was not found', { cause: error })
             default:
               throw new Error('A database error occurred', { cause: error })

@@ -1,20 +1,19 @@
-import type { Prisma } from '@prisma/client'
 import { Note } from '@prisma/client'
-import { PrismaClient } from '@prisma/client'
 
 import { IdInput, NoteCreateInput, PaginationInput } from '../common/schemas.js'
+import type { DbClient } from '../storage/types.js'
 
-type DbClient = PrismaClient | Prisma.TransactionClient
 export type NotesMethods = {
   getAllNotes: () => Promise<Note[]>
   createNote: (data: NoteCreateInput) => Promise<Note>
+  softDeleteNote: (data: IdInput) => Promise<string>
   deleteNote: (data: IdInput) => Promise<string>
   getNotesPaginated: (data: PaginationInput) => Promise<Note[]>
 }
 
-export type Storage = Readonly<{
+export type NotesStorage = Readonly<{
   notes: NotesMethods
-  transaction: <T>(callback: (repo: Readonly<Omit<Storage, 'transaction'>>) => Promise<T>) => Promise<T>
+  transaction: <T>(callback: (repo: Readonly<Omit<NotesStorage, 'transaction'>>) => Promise<T>) => Promise<T>
 }>
 
 function getAllNotes(db: DbClient) {
@@ -28,6 +27,16 @@ function createNote(db: DbClient) {
     return db.note.create({
       data,
     })
+  }
+}
+
+function softDeleteNote(db: DbClient) {
+  return async function (data: IdInput): Promise<string> {
+    await db.note.update({
+      where: { id: data.id },
+      data: { deletedAt: new Date() },
+    })
+    return data.id
   }
 }
 
@@ -51,32 +60,13 @@ function getNotesPaginated(db: DbClient) {
     })
   }
 }
-export function createPrismaClient(connectionString: string): PrismaClient {
-  return new PrismaClient({
-    datasources: {
-      db: { url: connectionString },
-    } as Prisma.PrismaClientOptions['datasources'],
-  })
-}
-function wrapDb(db: DbClient): Omit<Storage, 'transaction'> {
-  return {
-    notes: {
-      getAllNotes: getAllNotes(db),
-      createNote: createNote(db),
-      deleteNote: deleteNote(db),
-      getNotesPaginated: getNotesPaginated(db),
-    },
-  }
-}
 
-export async function createNotesStorage(db: PrismaClient): Promise<Storage> {
+export function createNotesStorage(db: DbClient): NotesMethods {
   return {
-    ...wrapDb(db),
-    async transaction(callback) {
-      return db.$transaction(async (tx) => {
-        const repo = wrapDb(tx)
-        return callback(repo)
-      })
-    },
+    getAllNotes: getAllNotes(db),
+    createNote: createNote(db),
+    softDeleteNote: softDeleteNote(db),
+    deleteNote: deleteNote(db),
+    getNotesPaginated: getNotesPaginated(db),
   }
 }

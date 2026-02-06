@@ -4,10 +4,10 @@ import pino from 'pino'
 
 import { createUseCaseExecutor } from './common/error/error-utils.js'
 import { createNotesUseCases } from './notes/notes.application.js'
-import { createNotesStorage } from './notes/notes.storage.js'
-import { createPrismaClient } from './notes/notes.storage.js'
 import { createNotesRouter } from './server/routers/notes.js'
 import { createTRPCRouter } from './server/routers/trpc.js'
+import { createPrismaClient } from './storage/db-client.js'
+import { createStorage } from './storage/storage.js'
 
 export async function setupApp() {
   //instantiate router
@@ -17,11 +17,11 @@ export async function setupApp() {
   //database client
   const dbClient = createPrismaClient('postgresql://invalid:invalid@localhost:5432/invalid')
   //storage object initialized
-  const notesStorage = await createNotesStorage(dbClient)
+  const storage = createStorage(dbClient)
   //use-case executor, to be used by all use-cases for consistent error handling
   const executor = createUseCaseExecutor({ logger })
   //notes use-case (to be used by TRPC router, and othes potentially)
-  const notesUseCases = createNotesUseCases({ storage: notesStorage, logger })
+  const notesUseCases = createNotesUseCases({ storage: storage, logger })
   //notes router, to be used in main app rotuer
   const notesRouter = createNotesRouter({ t, notesUseCases, executor })
 

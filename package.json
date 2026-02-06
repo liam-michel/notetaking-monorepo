@@ -15,6 +15,7 @@
     "db:studio": "npm run db:studio -w apps/backend"
   },
   "devDependencies": {
+    "eslint-plugin-unused-imports": "^4.3.0",
     "turbo": "^2.8.0",
     "typescript": "^5.3.0"
   },
