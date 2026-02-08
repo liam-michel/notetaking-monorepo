@@ -14,8 +14,31 @@ export const PaginationSchema = z.object({
   limit: z.number().min(1, 'Limit must be at least 1').max(100, 'Limit must be at most 100').default(10).catch(10),
 })
 
+export const SideSchema = z.enum(['T', 'CT'])
+export const EconomySchema = z.enum(['PISTOL', 'ANTI_ECO', 'ECO', 'FORCE_BUY', 'FULL_BUY'])
+export const PlayerRoleSchema = z.enum(['ENTRY', 'SUPPORT', 'LURKER', 'AWPER', 'IGL'])
+export const UtilitySchema = z.enum(['SMOKE', 'FLASH', 'HE_GRENADE', 'MOLOTOV', 'INCENDIARY', 'DECOY'])
+export const MapSchema = z.enum([
+  'DUST_2',
+  'INFERNO',
+  'MIRAGE',
+  'NUKE',
+  'OVERPASS',
+  'VERTIGO',
+  'ANCIENT',
+  'ANUBIS',
+  'TRAIN',
+])
+export const UserRoleSchema = z.enum(['USER', 'ADMIN'])
+
 export type IdInput = z.input<typeof IdSchema>
 
 export type NoteCreateInput = z.output<typeof NoteCreateSchema>
 
 export type PaginationInput = z.output<typeof PaginationSchema>
+
+export type Side = z.output<typeof SideSchema>
+export type Economy = z.output<typeof EconomySchema>
+export type PlayerRole = z.output<typeof PlayerRoleSchema>
+export type Utility = z.output<typeof UtilitySchema>
+export type UserRole = z.output<typeof UserRoleSchema>

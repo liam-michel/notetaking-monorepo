@@ -1,15 +1,15 @@
 import type { PrismaClient } from '@prisma/client'
 
-import { createNotesStorage, type NotesMethods } from '../notes/notes.storage'
+import { createStrategyStorage, StrategyMethods } from '../services/strategy/strategy.storage'
 import type { DbClient } from './types'
 export type Storage = Readonly<{
-  notes: NotesMethods
+  strategy: StrategyMethods
   transaction: <T>(callback: (repo: Readonly<Omit<Storage, 'transaction'>>) => Promise<T>) => Promise<T>
 }>
 
 function wrapDb(db: DbClient): Omit<Storage, 'transaction'> {
   return {
-    notes: createNotesStorage(db),
+    strategy: createStrategyStorage(db),
   }
 }
 
