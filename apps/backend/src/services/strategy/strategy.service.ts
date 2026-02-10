@@ -1,4 +1,4 @@
-import { AddStrategyInput, IdInput } from '@cs2monorepo/shared'
+import type { AddStrategyInput, IdInput } from '@cs2monorepo/shared'
 import type { Logger } from 'pino'
 
 import { Repo } from '../../storage/storage'

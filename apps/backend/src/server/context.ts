@@ -1,6 +1,8 @@
 import type { FastifyRequest } from 'fastify'
 import { Logger } from 'pino'
 
+import { createUseCaseExecutor, UseCaseExecutor } from '../common/error/error-utils'
+import { createServices } from '../services/create-strategies'
 import { createStrategyUseCases } from '../services/strategy/strategy.application'
 import { Storage } from '../storage/storage'
 
@@ -14,6 +16,7 @@ export type User = {
 export type AppContext = {
   user: User | null
   logger: Logger
+  executor: UseCaseExecutor
   useCases: {
     strategy: ReturnType<typeof createStrategyUseCases>
   }
@@ -51,13 +54,18 @@ export async function createContext({
       contextLogger.warn({ error }, 'Failed to parse auth token, proceeding with unauthenticated context')
     }
   }
+
+  //create services
+  const services = createServices({ storage, logger: contextLogger })
   //create all use cases and add to context
   const useCases = {
-    strategy: createStrategyUseCases({ storage, logger: contextLogger }),
+    strategy: createStrategyUseCases({ logger: contextLogger, services }),
   }
+  const executor = createUseCaseExecutor({ logger: contextLogger })
   return {
     user,
     logger: contextLogger,
+    executor,
     useCases,
   }
 }

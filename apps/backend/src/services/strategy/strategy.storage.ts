@@ -1,5 +1,5 @@
-import { AddStrategyInput, IdInput } from '@cs2monorepo/shared'
-import { Strategy } from '@prisma/client'
+import type { AddStrategyInput, IdInput } from '@cs2monorepo/shared'
+import type { Strategy } from '@prisma/client'
 
 import type { DbClient } from '../../storage/types'
 

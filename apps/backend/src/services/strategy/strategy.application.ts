@@ -1,34 +1,28 @@
 import type { AddStrategyInput, IdInput } from '@cs2monorepo/shared'
 import type { Logger } from 'pino'
 
-import { Storage } from '../../storage/storage'
-import { createStrategyService } from './strategy.service'
+import { Services } from '../create-strategies'
 
 type StrategyUseCaseDeps = {
-  storage: Storage
   logger: Logger
+  services: Services
 }
 
 export type StrategyUseCases = ReturnType<typeof createStrategyUseCases>
 
-export function createStrategyUseCases({ logger, storage }: StrategyUseCaseDeps) {
+export function createStrategyUseCases({ logger, services }: StrategyUseCaseDeps) {
   return {
     createStrategy: async (data: AddStrategyInput) => {
       logger.info('Use case: Creating strategy with data: %o', data)
-      const strategyService = createStrategyService({ logger, storage })
-      return strategyService.createStrategy(data)
+      return services.strategy.createStrategy(data)
     },
     softDeleteStrategy: async (data: IdInput) => {
       logger.info('Use case: Soft deleting strategy with id: %o', data)
-      const strategyService = createStrategyService({ logger, storage })
-
-      return strategyService.softDeleteStrategy(data)
+      return services.strategy.softDeleteStrategy(data)
     },
     deleteStrategy: async (data: IdInput) => {
       logger.info('Use case: Deleting strategy with id: %o', data)
-      const strategyService = createStrategyService({ logger, storage })
-
-      return strategyService.deleteStrategy(data)
+      return services.strategy.deleteStrategy(data)
     },
   }
 }
