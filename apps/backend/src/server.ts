@@ -1,19 +1,25 @@
+import fastifyCookie from '@fastify/cookie'
 import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify'
 import Fastify, { type FastifyRequest } from 'fastify'
 
 import { setupApp } from './composition.js'
+import { authPlugin } from './server/auth-plugin.js'
 import { createContext } from './server/context.js'
-
 async function main() {
+  //application dependencies (long lived singletons) are created in the composition root
   const { appRouter, logger, storage } = await setupApp()
 
   logger.info('App setup complete. Ready to start the server.')
+  //initalise fastify server and register plugins
   const fastify = Fastify({ loggerInstance: logger })
+  await fastify.register(fastifyCookie)
+  //register auth plugin before trpc plugin so that the user is available in the context
+  await fastify.register(authPlugin, { storage, logger })
   await fastify.register(fastifyTRPCPlugin, {
     prefix: '/trpc',
     trpcOptions: {
       router: appRouter,
-      createContext: ({ req }: { req: FastifyRequest }) => createContext({ request: req, logger, storage }),
+      createContext: ({ req }: { req: FastifyRequest }) => createContext({ request: req, storage }),
     },
   })
   fastify.listen({ port: 3000 }, () => logger.info('Server listening on port 3000'))

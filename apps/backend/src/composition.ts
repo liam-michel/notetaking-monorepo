@@ -7,6 +7,7 @@ import { createStrategyRouter } from './services/strategy/strategy.router.js'
 import { createPrismaClient } from './storage/db-client.js'
 import { createStorage } from './storage/storage.js'
 
+
 export async function setupApp() {
   //instantiate router
   const t = createTRPCRouter()
