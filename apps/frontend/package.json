@@ -12,11 +12,14 @@
   "packageManager": "bun@2.2.0",
   "dependencies": {
     "@cs2monorepo/shared": "workspace:*",
+    "@tanstack/react-router": "^1.159.5",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@tanstack/router-devtools": "^1.159.5",
+    "@tanstack/router-vite-plugin": "^1.159.5",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
