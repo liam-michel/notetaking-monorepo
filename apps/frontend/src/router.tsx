@@ -1,13 +1,28 @@
-import { createRootRouteWithContext, createRoute } from '@tanstack/react-router'
+import { createRootRouteWithContext, createRoute, redirect } from '@tanstack/react-router'
+import { Outlet } from '@tanstack/react-router'
 import About from './pages/About'
 import Dashboard from './pages/Dashboard'
 import type { QueryClient } from '@tanstack/react-query'
 import { createRouter } from '@tanstack/react-router'
-import { queryClient } from './lib/queryclient'
+import { queryClient } from './lib/providers/queryclient'
+import { ModeToggle } from './components/mode-toggle'
+import Signup from './pages/signup/SignUp'
+import Login from './pages/login/Login'
+import { authClient } from './lib/auth-client'
 export interface RouterContext {
   queryClient: QueryClient
 }
-const rootRoute = createRootRouteWithContext<RouterContext>()()
+
+const rootRoute = createRootRouteWithContext<RouterContext>()({
+  component: () => (
+    <>
+      <div className="fixed top-4 right-4 z-50">
+        <ModeToggle />
+      </div>
+      <Outlet />
+    </>
+  ),
+})
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
@@ -23,11 +38,13 @@ const aboutRoute = createRoute({
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'login',
+  component: Login,
 })
 
 const signUpRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'signup',
+  component: Signup,
 })
 
 export const protectedRoute = createRoute({
@@ -35,7 +52,11 @@ export const protectedRoute = createRoute({
   path: 'dashboard',
   component: Dashboard,
   loader: async () => {
-    //TODO auth check
+    //auth check with betterauth
+    const authResult = await authClient.getSession()
+    if (!authResult.data?.session) {
+      redirect({ to: '/login' })
+    }
   },
 })
 
