@@ -10,7 +10,166 @@ import { DatePicker } from '@/components/ui/datepicker'
 import { FormControl, FormItem, FormLabel, FormMessage, FormField, FormDescription, Form } from '@/components/ui/form'
 import React from 'react'
 import type { FieldValues } from 'react-hook-form'
+import { Slider } from '@/components/ui/slider'
 
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
+import { Badge } from '@/components/ui/badge'
+import { Check, ChevronsUpDown, X } from 'lucide-react'
+import { cn } from '@/lib/utils'
+
+export function MultiSelectField<TSchema extends z.ZodObject<Record<string, any>>>({
+  name,
+  label,
+  description,
+  disabled,
+  form,
+  className,
+  options,
+  placeholder = 'Select options...',
+}: BaseFieldProps & {
+  name: keyof z.input<TSchema>
+  form?: UseFormReturn<z.input<TSchema>>
+  options: Array<{ value: string; label: string }>
+}) {
+  const contextForm = useFormContext<z.input<TSchema>>()
+  const actualForm = form || contextForm
+
+  return (
+    <FormField
+      control={actualForm.control}
+      name={name as any}
+      render={({ field }) => {
+        const selected: string[] = Array.isArray(field.value) ? field.value : []
+
+        const toggle = (val: string) => {
+          const next = selected.includes(val) ? selected.filter((v) => v !== val) : [...selected, val]
+          field.onChange(next)
+        }
+
+        return (
+          <FormItem className={className}>
+            <div className="flex items-center justify-between">
+              <FormLabel>{label}</FormLabel>
+              <Button type="button" variant="ghost" size="sm" onClick={() => actualForm.resetField(name as any)}>
+                Reset
+              </Button>
+            </div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <FormControl>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    role="combobox"
+                    disabled={disabled}
+                    className={cn('w-full justify-between h-auto min-h-9', !selected.length && 'text-muted-foreground')}
+                  >
+                    <div className="flex flex-wrap gap-1">
+                      {selected.length
+                        ? selected.map((val) => (
+                            <Badge key={val} variant="secondary" className="text-xs">
+                              {options.find((o) => o.value === val)?.label ?? val}
+                              <span
+                                className="ml-1 cursor-pointer"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  toggle(val)
+                                }}
+                              >
+                                <X className="h-3 w-3" />
+                              </span>
+                            </Badge>
+                          ))
+                        : placeholder}
+                    </div>
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </FormControl>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Search..." />
+                  <CommandList>
+                    <CommandEmpty>No options found.</CommandEmpty>
+                    <CommandGroup>
+                      {options.map((option) => (
+                        <CommandItem key={option.value} value={option.value} onSelect={() => toggle(option.value)}>
+                          <Check
+                            className={cn(
+                              'mr-2 h-4 w-4',
+                              selected.includes(option.value) ? 'opacity-100' : 'opacity-0',
+                            )}
+                          />
+                          {option.label}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            <FormDescription>{description}</FormDescription>
+            <FormMessage />
+          </FormItem>
+        )
+      }}
+    />
+  )
+}
+
+export function SliderField<TSchema extends z.ZodObject<Record<string, any>>>({
+  name,
+  label,
+  description,
+  disabled,
+  form,
+  className,
+  min = 0,
+  max = 100,
+  step = 1,
+}: BaseFieldProps & {
+  name: NumberFieldsOf<TSchema>
+  form?: UseFormReturn<z.input<TSchema>>
+  min?: number
+  max?: number
+  step?: number
+}) {
+  const contextForm = useFormContext<z.input<TSchema>>()
+  const actualForm = form || contextForm
+
+  return (
+    <FormField
+      control={actualForm.control}
+      name={name as any}
+      render={({ field }) => (
+        <FormItem className={className}>
+          <div className="flex items-center justify-between">
+            <FormLabel>{label}</FormLabel>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">{(field.value as number) ?? min}</span>
+              <Button type="button" variant="ghost" size="sm" onClick={() => actualForm.resetField(name as any)}>
+                Reset
+              </Button>
+            </div>
+          </div>
+          <FormControl>
+            <Slider
+              value={[(field.value as number) ?? min]}
+              onValueChange={([val]) => field.onChange(val)}
+              min={min}
+              max={max}
+              step={step}
+              disabled={disabled}
+            />
+          </FormControl>
+          <FormDescription>{description}</FormDescription>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  )
+}
 export type FormProps<TSchema extends z.ZodType> = {
   onSubmit: (data: z.output<TSchema>) => Promise<void>
   defaultValues?: DefaultValues<z.input<TSchema>>
@@ -377,9 +536,9 @@ export function DateField<TSchema extends z.ZodObject<Record<string, any>>>({
 // ---------------------------------------------------------------------------
 
 export function SimpleForm<
-  TSchema extends z.ZodType,
-  TInput extends FieldValues = z.input<TSchema> & FieldValues,
-  TOutput extends FieldValues = z.output<TSchema> & FieldValues,
+  TInput extends FieldValues,
+  TOutput extends FieldValues,
+  TSchema extends z.ZodType<TOutput, any, any>,
 >({
   children,
   schema,
@@ -391,8 +550,8 @@ export function SimpleForm<
   onSubmit: (data: TOutput) => Promise<void>
   defaultValues?: DefaultValues<TInput>
 }) {
-  const form = useForm<TInput, unknown, TOutput>({
-    resolver: zodResolver(schema as any) as any,
+  const form = useForm<TInput, any, TOutput>({
+    resolver: zodResolver(schema as any),
     defaultValues,
   })
 
@@ -423,10 +582,14 @@ export function createForm<TSchema extends z.ZodObject<Record<string, any>>>(sch
       onSubmit: (data: z.output<TSchema>) => Promise<void>
       defaultValues?: DefaultValues<z.input<TSchema>>
     }) => (
-      <SimpleForm schema={schema} onSubmit={onSubmit} defaultValues={defaultValues}>
+      <SimpleForm schema={schema as any} onSubmit={onSubmit} defaultValues={defaultValues}>
         {children}
       </SimpleForm>
     ),
+    MultiSelectField: (props: Omit<Parameters<typeof MultiSelectField<TSchema>>[0], 'form'>) =>
+      MultiSelectField<TSchema>(props),
+
+    SliderField: (props: Omit<Parameters<typeof SliderField<TSchema>>[0], 'form'>) => SliderField<TSchema>(props),
 
     TextField: (props: Omit<Parameters<typeof TextField<TSchema>>[0], 'form'>) => TextField<TSchema>(props),
 

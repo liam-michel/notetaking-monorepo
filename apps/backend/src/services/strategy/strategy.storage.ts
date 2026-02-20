@@ -71,9 +71,7 @@ function createStrategy(db: DbClient) {
         difficulty: data.difficulty,
         userId: data.userId,
         economies: {
-          create: data.economy.map((economy) => ({
-            economy: economy, // Changed from type: economy.type
-          })),
+          create: [data.economy].map((economy) => ({ economy })),
         },
       },
       include: {

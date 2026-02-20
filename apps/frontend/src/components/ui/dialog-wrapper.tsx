@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   Dialog,
   DialogTrigger,
@@ -14,12 +15,39 @@ interface DialogWrapperProps {
   title: string
   description?: string
   triggerLabel: string
-  children: React.ReactNode
+  children: (helpers: { close: () => void }) => React.ReactNode
+  error?: string | null
+  // Optional controlled props
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
-export function DialogWrapper({ title, description, triggerLabel, children }: DialogWrapperProps) {
+export function DialogWrapper({
+  title,
+  description,
+  triggerLabel,
+  children,
+  error,
+  open: controlledOpen,
+  onOpenChange,
+}: DialogWrapperProps) {
+  const [internalOpen, setInternalOpen] = useState(false)
+
+  // If the caller passes `open`, we use that. Otherwise fall back to internal state.
+  const isControlled = controlledOpen !== undefined
+  const open = isControlled ? controlledOpen : internalOpen
+
+  // If the caller passes `onOpenChange`, delegate to them. Otherwise manage internally.
+  // Either way, the dialog always has a handler to call.
+  const handleOpenChange = (next: boolean) => {
+    if (!isControlled) setInternalOpen(next)
+    onOpenChange?.(next)
+  }
+
+  const close = () => handleOpenChange(false)
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button>{triggerLabel}</Button>
       </DialogTrigger>
@@ -28,7 +56,8 @@ export function DialogWrapper({ title, description, triggerLabel, children }: Di
           <DialogTitle>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
-        {children}
+        {error && <p className="text-sm text-destructive">{error}</p>}
+        {children({ close })}
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>

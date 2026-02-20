@@ -1,21 +1,13 @@
-import { columns, StrategyColumn } from '../../components/strategy-table/columns'
+import { columns } from '../../components/strategy-table/columns'
 import { DataTable } from '@/components/ui/data-table'
 import { useUserStrategies } from '@/hooks/user/useUserStrategies'
-import { Button } from '@/components/ui/button'
 import { CreateStrategyForm } from '@/forms/createStrategyForm'
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogTitle,
-  DialogHeader,
-  DialogDescription,
-  DialogFooter,
-  DialogClose,
-} from '@/components/ui/dialog'
+
 import { DialogWrapper } from '@/components/ui/dialog-wrapper'
+import { useCreateUserStrategy } from '@/hooks/user/useCreateStrategy'
 export default function UserStrategies() {
   const { data, error } = useUserStrategies()
+  const createStrategyMutation = useCreateUserStrategy()
 
   if (error) {
     return <div>Error loading strategies: {error.message}</div>
@@ -28,7 +20,16 @@ export default function UserStrategies() {
         description="Fill out the form below to create a new strategy."
         triggerLabel="Create Strategy"
       >
-        <CreateStrategyForm onSubmit={async () => console.log('hello')} />
+        {({ close }) => (
+          <CreateStrategyForm
+            onSubmit={async (data) => {
+              await createStrategyMutation.mutateAsync({
+                ...data,
+              })
+              close()
+            }}
+          />
+        )}
       </DialogWrapper>
 
       <h1>My Strategies</h1>
