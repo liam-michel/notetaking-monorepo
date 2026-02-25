@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import useFormOpen from '@/hooks/ui/useFormOpen'
 import { useState } from 'react'
 import { DeleteForm } from '@/forms/DeleteForm'
+import { Map } from '@cs2monorepo/shared'
 
 export default function UserStrategies() {
   const { data, error, isLoading } = trpc.strategy.getUsersStrategies.useQuery()
@@ -40,13 +41,9 @@ export default function UserStrategies() {
             {({ close }) => (
               <StrategyForm
                 onSubmit={async (data) => {
-                  createStrategyMutation.mutate(data, {
-                    onSuccess: () => {
-                      revalidate()
-                      close()
-                    },
-                    onError: (err) => toast.error(err.message),
-                  })
+                  await createStrategyMutation.mutateAsync(data)
+                  revalidate()
+                  close()
                 }}
               />
             )}
@@ -91,16 +88,7 @@ export default function UserStrategies() {
                   selectedItem
                     ? {
                         name: selectedItem.name,
-                        map: selectedItem.map.name as
-                          | 'Dust II'
-                          | 'Inferno'
-                          | 'Mirage'
-                          | 'Nuke'
-                          | 'Overpass'
-                          | 'Vertigo'
-                          | 'Ancient'
-                          | 'Anubis'
-                          | 'Train',
+                        map: selectedItem.map.name as Map,
                         side: selectedItem.side,
                         description: selectedItem.description,
                         difficulty: selectedItem.difficulty,
@@ -110,18 +98,9 @@ export default function UserStrategies() {
                 }
                 onSubmit={async (data) => {
                   if (!selectedItem) return
-                  console.log(data)
-                  console.log(selectedItem.id)
-                  editStrategyMutation.mutate(
-                    { ...data, id: selectedItem.id },
-                    {
-                      onSuccess: () => {
-                        revalidate()
-                        close()
-                      },
-                      onError: (err) => toast.error(err.message),
-                    },
-                  )
+                  await editStrategyMutation.mutateAsync({ ...data, id: selectedItem.id })
+                  revalidate()
+                  close()
                 }}
               />
             )}

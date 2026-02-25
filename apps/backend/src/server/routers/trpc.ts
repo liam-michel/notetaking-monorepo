@@ -2,6 +2,7 @@ import { initTRPC } from '@trpc/server'
 import superjson from 'superjson'
 import { ZodError } from 'zod'
 
+import { ConflictError } from '../../common/error/errors'
 import { DomainError } from '../../common/error/errors'
 import type { AppContext } from '../context'
 
@@ -12,6 +13,21 @@ export function createTRPCRouter() {
     transformer: superjson,
     errorFormatter({ shape, error }) {
       const originalError = error.cause?.cause || error.cause
+
+      if (originalError instanceof ConflictError) {
+        return {
+          ...shape,
+          data: {
+            ...shape.data,
+            code: originalError.code,
+            message: originalError.message,
+            fieldErrors: Object.fromEntries(
+              (originalError.fields ?? []).map((field) => [field, originalError.message]),
+            ),
+          },
+        }
+      }
+
       if (originalError instanceof DomainError) {
         return {
           ...shape,
@@ -23,6 +39,7 @@ export function createTRPCRouter() {
           },
         }
       }
+
       if (originalError instanceof ZodError) {
         return {
           ...shape,
@@ -33,6 +50,7 @@ export function createTRPCRouter() {
           },
         }
       }
+
       return {
         ...shape,
         data: {

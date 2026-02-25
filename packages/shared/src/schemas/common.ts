@@ -14,22 +14,24 @@ export const PaginationSchema = z.object({
   limit: z.number().min(1, 'Limit must be at least 1').max(100, 'Limit must be at most 100').default(10).catch(10),
 })
 
-export const SideSchema = z.enum(['T', 'CT'])
-export const EconomySchema = z.enum(['PISTOL', 'ANTI_ECO', 'ECO', 'FORCE_BUY', 'FULL_BUY'])
-export const PlayerRoleSchema = z.enum(['ENTRY', 'SUPPORT', 'LURKER', 'AWPER', 'IGL'])
-export const UtilitySchema = z.enum(['SMOKE', 'FLASH', 'HE_GRENADE', 'MOLOTOV', 'INCENDIARY', 'DECOY'])
-export const MapSchema = z.enum([
-  'Dust II',
-  'Inferno',
-  'Mirage',
-  'Nuke',
-  'Overpass',
-  'Vertigo',
-  'Ancient',
-  'Anubis',
-  'Train',
-])
-export const UserRoleSchema = z.enum(['USER', 'ADMIN'])
+export const SideSchema = z.enum(['T', 'CT'], 'Side must be either "T" or "CT"')
+export const EconomySchema = z.enum(
+  ['PISTOL', 'ANTI_ECO', 'ECO', 'FORCE_BUY', 'FULL_BUY'],
+  'Economy must be one of: PISTOL, ANTI_ECO, ECO, FORCE_BUY, FULL_BUY',
+)
+export const PlayerRoleSchema = z.enum(
+  ['ENTRY', 'SUPPORT', 'LURKER', 'AWPER', 'IGL'],
+  'Player role must be one of: ENTRY, SUPPORT, LURKER, AWPER, IGL',
+)
+export const UtilitySchema = z.enum(
+  ['SMOKE', 'FLASH', 'HE_GRENADE', 'MOLOTOV', 'INCENDIARY', 'DECOY'],
+  'Utility must be one of: SMOKE, FLASH, HE_GRENADE, MOLOTOV, INCENDIARY, DECOY',
+)
+export const MapSchema = z.enum(
+  ['Dust II', 'Inferno', 'Mirage', 'Nuke', 'Overpass', 'Vertigo', 'Ancient', 'Anubis', 'Train'],
+  'Map must be a valid CS:GO map',
+)
+export const UserRoleSchema = z.enum(['USER', 'ADMIN'], 'User role must be either USER or ADMIN')
 
 export type IdInput = z.input<typeof IdSchema>
 

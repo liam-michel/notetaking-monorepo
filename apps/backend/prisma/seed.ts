@@ -1,11 +1,17 @@
 //seeding script for some basic base information (maps)
 import { PrismaClient } from '@prisma/client'
+const prisma = new PrismaClient()
+import { hashPassword } from 'better-auth/crypto'
+//eslint ignore all eslint rules here
+//eslint-disable-next-line
+const password = 'password123' // test password
 
 async function seed() {
-  const prisma = new PrismaClient()
   //try to seed two test users, and the maps
+  const hashedPassword = await hashPassword(password)
   try {
     await prisma.user.createMany({
+      skipDuplicates: true,
       data: [
         {
           id: 'user1',
@@ -19,11 +25,28 @@ async function seed() {
         },
       ],
     })
+    await prisma.account.createMany({
+      skipDuplicates: true,
+      data: [
+        {
+          userId: 'user1',
+          accountId: 'user1',
+          providerId: 'credential',
+          password: hashedPassword,
+        },
+        {
+          userId: 'user2',
+          accountId: 'user2',
+          providerId: 'credential',
+          password: hashedPassword,
+        },
+      ],
+    })
   } catch (error) {
     //log error but continue seeding
     //ignore no console lint here
     // eslint-disable-next-line no-console
-    console.error('Error seeding users:', error)
+    console.error('Error seeding accounts:', error)
   }
   //try to seed the maps
   try {

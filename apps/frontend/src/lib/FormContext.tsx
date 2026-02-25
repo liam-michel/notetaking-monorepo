@@ -556,13 +556,26 @@ export function SimpleForm<
   })
 
   const handleSubmit = form.handleSubmit(async (data) => {
-    console.log('Form data before submission:', data)
-    await onSubmit(data)
+    try {
+      await onSubmit(data)
+    } catch (err: any) {
+      const fieldErrors = err?.data?.fieldErrors
+      if (fieldErrors) {
+        Object.entries(fieldErrors).forEach(([field, message]) => {
+          form.setError(field as any, { message: message as string })
+        })
+      } else {
+        form.setError('root', { message: err?.data?.message ?? err?.message ?? 'Something went wrong' })
+      }
+    }
   })
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit} className="space-y-4">
         {children}
+        {form.formState.errors.root && (
+          <p className="text-sm font-medium text-destructive">{form.formState.errors.root.message}</p>
+        )}
         <Button type="submit" disabled={form.formState.isSubmitting}>
           {form.formState.isSubmitting ? 'Submitting...' : 'Submit'}
         </Button>

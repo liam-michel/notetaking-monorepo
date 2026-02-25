@@ -134,7 +134,7 @@ model Strategy {
   id          String @id @default(cuid())
   userId      String
   user        User   @relation(fields: [userId], references: [id])
-  name        String
+  name        String @unique
   description String
 
   side       Side

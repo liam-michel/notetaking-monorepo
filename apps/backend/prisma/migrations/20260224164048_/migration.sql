@@ -17,6 +17,7 @@ CREATE TYPE "UserRole" AS ENUM ('USER', 'ADMIN');
 CREATE TABLE "Map" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "Map_pkey" PRIMARY KEY ("id")
 );
@@ -26,10 +27,9 @@ CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "emailVerified" BOOLEAN NOT NULL DEFAULT false,
-    "name" TEXT,
+    "name" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "username" TEXT NOT NULL,
     "role" "UserRole" NOT NULL DEFAULT 'USER',
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
@@ -43,6 +43,8 @@ CREATE TABLE "Session" (
     "token" TEXT NOT NULL,
     "ipAddress" TEXT,
     "userAgent" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Session_pkey" PRIMARY KEY ("id")
 );
@@ -58,6 +60,8 @@ CREATE TABLE "Account" (
     "idToken" TEXT,
     "expiresAt" TIMESTAMP(3),
     "password" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Account_pkey" PRIMARY KEY ("id")
 );
@@ -68,6 +72,8 @@ CREATE TABLE "Verification" (
     "identifier" TEXT NOT NULL,
     "value" TEXT NOT NULL,
     "expiresAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Verification_pkey" PRIMARY KEY ("id")
 );
@@ -90,11 +96,13 @@ CREATE TABLE "Utility" (
 -- CreateTable
 CREATE TABLE "Strategy" (
     "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "side" "Side" NOT NULL,
     "difficulty" INTEGER NOT NULL DEFAULT 3,
     "mapId" TEXT NOT NULL,
+    "economy" "Economy" NOT NULL,
     "ratingAverage" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "ratingCount" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -102,14 +110,6 @@ CREATE TABLE "Strategy" (
     "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "Strategy_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "StrategyEconomy" (
-    "strategyId" TEXT NOT NULL,
-    "economy" "Economy" NOT NULL,
-
-    CONSTRAINT "StrategyEconomy_pkey" PRIMARY KEY ("strategyId","economy")
 );
 
 -- CreateTable
@@ -132,9 +132,6 @@ CREATE UNIQUE INDEX "Map_name_key" ON "Map"("name");
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
-
--- CreateIndex
 CREATE UNIQUE INDEX "Session_token_key" ON "Session"("token");
 
 -- CreateIndex
@@ -147,10 +144,10 @@ CREATE UNIQUE INDEX "Account_providerId_accountId_key" ON "Account"("providerId"
 CREATE UNIQUE INDEX "Verification_identifier_value_key" ON "Verification"("identifier", "value");
 
 -- CreateIndex
-CREATE INDEX "Strategy_mapId_side_idx" ON "Strategy"("mapId", "side");
+CREATE UNIQUE INDEX "Strategy_name_key" ON "Strategy"("name");
 
 -- CreateIndex
-CREATE INDEX "StrategyEconomy_economy_idx" ON "StrategyEconomy"("economy");
+CREATE INDEX "Strategy_mapId_side_idx" ON "Strategy"("mapId", "side");
 
 -- CreateIndex
 CREATE INDEX "StrategyComment_strategyId_idx" ON "StrategyComment"("strategyId");
@@ -165,10 +162,10 @@ ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId"
 ALTER TABLE "Utility" ADD CONSTRAINT "Utility_strategyId_fkey" FOREIGN KEY ("strategyId") REFERENCES "Strategy"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Strategy" ADD CONSTRAINT "Strategy_mapId_fkey" FOREIGN KEY ("mapId") REFERENCES "Map"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Strategy" ADD CONSTRAINT "Strategy_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "StrategyEconomy" ADD CONSTRAINT "StrategyEconomy_strategyId_fkey" FOREIGN KEY ("strategyId") REFERENCES "Strategy"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Strategy" ADD CONSTRAINT "Strategy_mapId_fkey" FOREIGN KEY ("mapId") REFERENCES "Map"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "StrategyComment" ADD CONSTRAINT "StrategyComment_strategyId_fkey" FOREIGN KEY ("strategyId") REFERENCES "Strategy"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -19,7 +19,6 @@ export default [
       'toplevel/no-toplevel-let': 'error',
 
       'ex/no-unhandled': 'error',
-      'ex/use-error-cause': 'error',
     },
   },
 ]

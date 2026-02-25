@@ -31,4 +31,10 @@ export class DatabaseError extends DomainError {
 
 export class ConflictError extends DomainError {
   readonly code = 'CONFLICT' as const
+  constructor(
+    message: string,
+    public readonly fields?: string[],
+  ) {
+    super(message)
+  }
 }
