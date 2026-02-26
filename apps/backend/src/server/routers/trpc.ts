@@ -40,6 +40,7 @@ export function createTRPCRouter() {
         }
       }
 
+      // <--- Add this console.error here
       if (originalError instanceof ZodError) {
         return {
           ...shape,
@@ -84,11 +85,28 @@ export function createTRPCRouter() {
     return next()
   })
 
-  const protectedProcedure = t.procedure.use(isAuthed)
+  const baseProcedure = t.procedure.use(async ({ ctx, next }) => {
+    const result = await next()
+
+    if (!result.ok) {
+      const error = result.error
+
+      if (error.code === 'BAD_REQUEST' && error.cause instanceof ZodError) {
+        ctx.logger.warn({ issues: error.cause.issues, code: error.code }, 'input validation failed')
+      } else {
+        ctx.logger.error({ err: error, code: error.code }, 'procedure failed')
+      }
+    }
+
+    return result // always return it, even on error
+  })
+  const publicProcedure = baseProcedure
+  const protectedProcedure = baseProcedure.use(isAuthed)
   const adminProcedure = t.procedure.use(isAuthed).use(isAdmin)
 
   return {
     router: t.router,
+    publicProcedure,
     protectedProcedure,
     adminProcedure,
   }

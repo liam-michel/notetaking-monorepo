@@ -5,7 +5,10 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-kysely"
+  output   = "../src/__generated__/"
+  fileName = "database.ts"
+  camelCase = false
 }
 
 datasource db {
@@ -50,14 +53,14 @@ enum UserRole {
 }
 
 model Map {
-  id         String     @id @default(cuid())
+  id         String     @id @default(uuid())
   name       String     @unique
   isActive  Boolean    @default(true) 
   strategies Strategy[]
 }
 
 model User {
-  id            String   @id @default(cuid())
+  id            String   @id @default(uuid())
   email         String   @unique
   emailVerified Boolean  @default(false)
   name          String
@@ -73,7 +76,7 @@ model User {
 }
 
 model Session {
-  id        String   @id @default(cuid())
+  id        String   @id @default(uuid())
   userId    String
   expiresAt DateTime
   token     String   @unique
@@ -88,7 +91,7 @@ model Session {
 }
 
 model Account {
-  id           String    @id @default(cuid())
+  id           String    @id @default(uuid())
   userId       String
   accountId    String
   providerId   String
@@ -106,7 +109,7 @@ model Account {
 }
 
 model Verification {
-  id         String   @id @default(cuid())
+  id         String   @id @default(uuid())
   identifier String
   value      String
   expiresAt  DateTime
@@ -117,9 +120,9 @@ model Verification {
 }
 
 model Utility {
-  id         String      @id @default(cuid())
+  id         String      @id @default(uuid())
   strategyId String
-  strategy   Strategy    @relation(fields: [strategyId], references: [id])
+  strategy   Strategy    @relation(fields: [strategyId], references: [id], onDelete: Cascade)
   type       UtilityType
   location   String?
   timing     String?
@@ -131,9 +134,9 @@ model Utility {
 }
 
 model Strategy {
-  id          String @id @default(cuid())
+  id          String @id @default(uuid())
   userId      String
-  user        User   @relation(fields: [userId], references: [id])
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   name        String @unique
   description String
 
@@ -141,7 +144,7 @@ model Strategy {
   difficulty Int  @default(3)
 
   mapId    String
-  map      Map               @relation(fields: [mapId], references: [id])
+  map      Map               @relation(fields: [mapId], references: [id], onDelete: Cascade)
   comments StrategyComment[]
 
   economy Economy
@@ -158,11 +161,11 @@ model Strategy {
 
 
 model StrategyComment {
-  id         String   @id @default(cuid())
+  id         String   @id @default(uuid())
   strategyId String
-  strategy   Strategy @relation(fields: [strategyId], references: [id])
+  strategy   Strategy @relation(fields: [strategyId], references: [id], onDelete: Cascade)
   userId     String?
-  user       User?    @relation(fields: [userId], references: [id])
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   content   String
   rating    Int?

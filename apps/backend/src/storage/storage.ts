@@ -1,8 +1,7 @@
-import type { Prisma, PrismaClient } from '@prisma/client'
-
 import { createStrategyStorage, StrategyStorageMethods } from '../services/strategy/strategy.storage'
 import { createUserStorage, UserStorageMethods } from '../services/user/user.storage'
-import type { DbClient } from './types'
+import type { KyselyDB } from './types/types'
+
 export type Storage = Readonly<{
   strategy: StrategyStorageMethods
   user: UserStorageMethods
@@ -11,20 +10,20 @@ export type Storage = Readonly<{
 
 export type Repo = Readonly<Omit<Storage, 'transaction'>>
 
-function wrapDb(db: DbClient): Omit<Storage, 'transaction'> {
+function wrapKyselyDb(db: KyselyDB): Omit<Storage, 'transaction'> {
   return {
     strategy: createStrategyStorage(db),
     user: createUserStorage(db),
   }
 }
 
-export function createStorage(db: PrismaClient): Storage {
+export async function createPostgresStorage(db: KyselyDB): Promise<Storage> {
   return {
-    ...wrapDb(db),
-    async transaction(callback) {
-      return db.$transaction(async (tx: Prisma.TransactionClient) => {
-        const repo = wrapDb(tx)
-        return callback(repo)
+    ...wrapKyselyDb(db),
+    transaction: async <T>(callback: (repo: Omit<Storage, 'transaction'>) => Promise<T>): Promise<T> => {
+      return db.transaction().execute(async (trx) => {
+        const trxRepo = wrapKyselyDb(trx)
+        return callback(trxRepo)
       })
     },
   }

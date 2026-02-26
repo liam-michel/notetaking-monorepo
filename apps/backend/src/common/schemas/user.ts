@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 export const SafeUserSchema = z.object({
-  id: z.cuid(),
+  id: z.uuid(),
   name: z.string(),
   email: z.email(),
   role: z.enum(['USER', 'ADMIN']),
@@ -14,12 +14,12 @@ export const AddUserSchema = z.object({
 })
 
 export const UpdateUserEmailSchema = z.object({
-  id: z.cuid(),
+  id: z.uuid(),
   email: z.email(),
 })
 
 export const UpdateUserPasswordSchema = z.object({
-  id: z.cuid(),
+  id: z.uuid(),
   password: z.string().min(8).max(30),
 })
 

@@ -3,6 +3,7 @@ import fp from 'fastify-plugin'
 import type { Logger } from 'pino'
 
 import type { SafeUser } from '../common/schemas/user'
+import { Cache } from '../redis/createRedisCache'
 import type { Storage } from '../storage/storage'
 import type { BetterAuth } from './auth'
 declare module 'fastify' {
@@ -18,10 +19,7 @@ export type AuthPluginOptions = {
   betterAuth: BetterAuth
   cache: Cache
 }
-const authPluginfn: FastifyPluginAsync<AuthPluginOptions> = async (
-  fastify,
-  { storage, logger, betterAuth },
-) => {
+const authPluginfn: FastifyPluginAsync<AuthPluginOptions> = async (fastify, { storage, logger, betterAuth }) => {
   fastify.decorateRequest('authUser', null)
   fastify.addHook('onRequest', async (request) => {
     request.requestLogger = logger.child({
@@ -33,7 +31,7 @@ const authPluginfn: FastifyPluginAsync<AuthPluginOptions> = async (
   fastify.addHook('preHandler', async (request) => {
     //default user to null
     request.authUser = null
-    //try redis first  
+    //try redis first
     // Convert Fastify headers to standard Headers object
     const headers = new Headers()
     Object.entries(request.headers).forEach(([key, value]) => {

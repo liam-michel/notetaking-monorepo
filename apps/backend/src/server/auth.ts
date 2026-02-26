@@ -1,10 +1,9 @@
 import { betterAuth } from 'better-auth'
-import { prismaAdapter } from 'better-auth/adapters/prisma'
 
-import { DbClient } from '../storage/types'
+import type { KyselyDB } from '../storage/types/types'
 
 type BetterAuthDeps = {
-  db: DbClient
+  db: KyselyDB
   baseURL: string
   trustedOrigin: string
 }
@@ -15,10 +14,12 @@ export function createBetterAuthSingleton(deps: BetterAuthDeps) {
   return betterAuth({
     baseURL,
     trustedOrigins: [trustedOrigin],
-    database: prismaAdapter(db, {
-      provider: 'postgresql',
-    }),
+    database: {
+      db: db,
+      type: 'postgres',
+    },
     user: {
+      modelName: 'User',
       additionalFields: {
         role: {
           type: 'string',
@@ -27,6 +28,9 @@ export function createBetterAuthSingleton(deps: BetterAuthDeps) {
         },
       },
     },
+    session: { modelName: 'Session' },
+    account: { modelName: 'Account' },
+    verification: { modelName: 'Verification' },
     emailAndPassword: {
       enabled: true,
     },

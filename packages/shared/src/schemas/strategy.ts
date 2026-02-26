@@ -21,15 +21,15 @@ export const AddStrategySchema = z.object({
 })
 
 export const AddStrategyServiceSchema = AddStrategySchema.extend({
-  userId: z.cuid(),
+  userId: z.uuid(),
 })
 
 export const EditStrategySchema = AddStrategySchema.extend({
-  id: z.cuid('Invalid strategy ID'),
+  id: z.uuid('Invalid strategy ID'),
 })
 
 export const EditStrategyServiceSchema = EditStrategySchema.extend({
-  userId: z.cuid(),
+  userId: z.uuid(),
 })
 
 export type AddStrategyInput = z.output<typeof AddStrategySchema>

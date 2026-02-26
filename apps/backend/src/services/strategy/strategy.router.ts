@@ -34,6 +34,7 @@ export function createStrategyRouter(deps: StrategyRouterDeps) {
     }),
 
     editStrategy: protectedProcedure.input(EditStrategySchema).mutation(({ ctx, input }) => {
+      logger.info(`User ${ctx.user.id} is editing strategy ${input.id}`)
       return ctx.executor.execute(
         'editStrategy',
         ctx.useCases.strategy.editStrategy({

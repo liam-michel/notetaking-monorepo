@@ -2,12 +2,13 @@
 
 import pino from 'pino'
 
+import { createRedisCache } from './redis/createRedisCache.js'
 import { createRedisClient } from './redis/createRedisClient.js'
 import { createBetterAuthSingleton } from './server/auth.js'
 import { createTRPCRouter } from './server/routers/trpc.js'
 import { createStrategyRouter } from './services/strategy/strategy.router.js'
-import { createPrismaClient } from './storage/db-client.js'
-import { createStorage } from './storage/storage.js'
+import { createKyselyClient } from './storage/kysely-client.js'
+import { createPostgresStorage } from './storage/storage.js'
 import { parseEnv } from './utils/envConfig.js'
 
 export async function setupApp() {
@@ -18,22 +19,25 @@ export async function setupApp() {
   //instantiate router
   const t = createTRPCRouter()
   //database client
-  const dbClient = createPrismaClient(envVars.DATABASE_URL)
+  const { db } = await createKyselyClient({
+    connectionString: envVars.DATABASE_URL,
+  })
   //redis client
   const redisClient = createRedisClient({
     host: envVars.REDIS_HOST,
     port: envVars.REDIS_PORT,
     password: envVars.REDIS_PASSWORD,
   })
+  //redis cache interface
+  const redisCache = createRedisCache({ redis: redisClient })
   //declare better-auth singleton
-
   const auth = createBetterAuthSingleton({
-    db: dbClient,
+    db: db,
     baseURL: envVars.BETTERAUTH_URL,
     trustedOrigin: envVars.FRONTEND_URL,
   })
   //storage object initialized
-  const storage = createStorage(dbClient)
+  const storage = await createPostgresStorage(db)
   //use-case executor, to be used by all use-cases for consistent error handling
 
   //strategy router
@@ -48,6 +52,7 @@ export async function setupApp() {
     t,
     logger,
     storage,
+    cache: redisCache,
     appRouter,
     auth,
   }
