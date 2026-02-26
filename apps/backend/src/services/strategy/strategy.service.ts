@@ -24,104 +24,78 @@ export type StrategyService = {
   deleteStrategy: (data: IdInput & { userId: string }) => ReturnType<Repo['strategy']['deleteStrategy']>
 }
 
-function getUsersStrategies({ storage, logger }: StrategyServiceDeps) {
+function getUsersStrategies({ storage }: StrategyServiceDeps) {
   return async function (data: IdInput) {
-    logger.info('Getting strategies for user with id: %o', data.id)
-    return await storage.strategy.getUsersStrategies(data)
+    return storage.strategy.getUsersStrategies(data)
   }
 }
 
-function getUsersStrategiesPaginated({ storage, logger }: StrategyServiceDeps) {
+function getUsersStrategiesPaginated({ storage }: StrategyServiceDeps) {
   return async function (data: IdInput & PaginationInput) {
-    logger.info(
-      'Getting paginated strategies for user with id: %o, page: %o, limit: %o',
-      data.id,
-      data.page,
-      data.limit,
-    )
-    return await storage.strategy.getUsersStrategiesPaginated(data)
+    return storage.strategy.getUsersStrategiesPaginated(data)
   }
 }
 
-function createStrategy({ storage, logger }: StrategyServiceDeps) {
+function createStrategy({ storage }: StrategyServiceDeps) {
   return async function (data: AddStrategyApplicationInput) {
-    logger.info('Creating a new strategy with data: %o', data)
-    const strategy = await storage.strategy.createStrategy(data)
-
-    // future business logic here
-    return strategy
+    return storage.strategy.createStrategy(data)
   }
 }
 
 function editStrategy({ storage, logger }: StrategyServiceDeps) {
   return async function (data: EditStrategyApplicationInput & { userId: string }) {
-    //check if the user owns the strategy before allowing them to edit
-    logger.info('Checking if user owns the strategy with id: %o', data.id)
     const strategy = await storage.strategy.getStrategyRaw({ id: data.id })
     if (!strategy) {
-      logger.warn('Strategy with id %o not found', data.id)
+      logger.warn({ strategyId: data.id }, 'Strategy not found')
       throw new NotFoundError('Strategy not found')
-    } else if (strategy.userId !== data.userId) {
-      logger.warn('User with id %o does not own strategy with id %o', data.userId, data.id)
+    }
+    if (strategy.userId !== data.userId) {
+      logger.warn({ userId: data.userId, strategyId: data.id }, 'Unauthorized edit attempt')
       throw new UnauthorizedError('You are not authorized to edit this strategy')
     }
-    logger.info('Editing strategy with id: %o, data: %o', data.id, data)
-    const editedStrategy = await storage.strategy.editStrategy({
-      id: data.id,
-      name: data.name,
-      description: data.description,
-      side: data.side,
-      difficulty: data.difficulty,
-      map: data.map,
-      economy: data.economy,
-    })
-
-    // future business logic here
-    return editedStrategy
+    return storage.strategy.editStrategy(data)
   }
 }
 
 function softDeleteStrategy({ storage, logger }: StrategyServiceDeps) {
   return async function (data: IdInput & { userId: string }) {
-    logger.info('Checking if user owns the strategy with id: %o', data)
     const strategy = await storage.strategy.getStrategyRaw({ id: data.id })
     if (!strategy) {
-      logger.warn('Strategy with id %o not found', data.id)
+      logger.warn({ strategyId: data.id }, 'Strategy not found')
       throw new NotFoundError('Strategy not found')
     }
     if (strategy.userId !== data.userId) {
-      logger.warn('User with id %o does not own strategy with id %o', data.userId, data.id)
+      logger.warn({ userId: data.userId, strategyId: data.id }, 'Unauthorized soft delete attempt')
       throw new UnauthorizedError('You are not authorized to delete this strategy')
     }
-    logger.info('Soft deleting a strategy with id: %o', data)
-    return await storage.strategy.softDeleteStrategy(data)
+    return storage.strategy.softDeleteStrategy(data)
   }
 }
 
 function deleteStrategy({ storage, logger }: StrategyServiceDeps) {
   return async function (data: IdInput & { userId: string }) {
-    logger.info('Checking if user owns the strategy with id: %o', data)
     const strategy = await storage.strategy.getStrategyRaw({ id: data.id })
     if (!strategy) {
-      logger.warn('Strategy with id %o not found', data.id)
+      logger.warn({ strategyId: data.id }, 'Strategy not found')
       throw new NotFoundError('Strategy not found')
     }
     if (strategy.userId !== data.userId) {
-      logger.warn('User with id %o does not own strategy with id %o', data.userId, data.id)
+      logger.warn({ userId: data.userId, strategyId: data.id }, 'Unauthorized delete attempt')
       throw new UnauthorizedError('You are not authorized to delete this strategy')
     }
-    logger.info('Deleting a strategy with id: %o', data)
-    return await storage.strategy.deleteStrategy(data)
+    return storage.strategy.deleteStrategy(data)
   }
 }
 
 export function createStrategyService(deps: StrategyServiceDeps): StrategyService {
+  const { logger, storage } = deps
+  const log = logger.child({ layer: 'service', domain: 'strategy' })
   return {
-    getUsersStrategies: getUsersStrategies(deps),
-    getUsersStrategiesPaginated: getUsersStrategiesPaginated(deps),
-    createStrategy: createStrategy(deps),
-    editStrategy: editStrategy(deps),
-    softDeleteStrategy: softDeleteStrategy(deps),
-    deleteStrategy: deleteStrategy(deps),
+    getUsersStrategies: getUsersStrategies({ storage, logger: log }),
+    getUsersStrategiesPaginated: getUsersStrategiesPaginated({ storage, logger: log }),
+    createStrategy: createStrategy({ storage, logger: log }),
+    editStrategy: editStrategy({ storage, logger: log }),
+    softDeleteStrategy: softDeleteStrategy({ storage, logger: log }),
+    deleteStrategy: deleteStrategy({ storage, logger: log }),
   }
 }

@@ -142,31 +142,42 @@ export function SliderField<TSchema extends z.ZodObject<Record<string, any>>>({
     <FormField
       control={actualForm.control}
       name={name as any}
-      render={({ field }) => (
-        <FormItem className={className}>
-          <div className="flex items-center justify-between">
-            <FormLabel>{label}</FormLabel>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">{(field.value as number) ?? min}</span>
-              <Button type="button" variant="ghost" size="sm" onClick={() => actualForm.resetField(name as any)}>
-                Reset
-              </Button>
+      render={({ field }) => {
+        const value = (field.value as number) ?? min
+
+        // Sync the default value into the form on first render
+        React.useEffect(() => {
+          if (field.value === undefined) {
+            field.onChange(min)
+          }
+        }, [])
+
+        return (
+          <FormItem className={className}>
+            <div className="flex items-center justify-between">
+              <FormLabel>{label}</FormLabel>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">{value}</span>
+                <Button type="button" variant="ghost" size="sm" onClick={() => actualForm.resetField(name as any)}>
+                  Reset
+                </Button>
+              </div>
             </div>
-          </div>
-          <FormControl>
-            <Slider
-              value={[(field.value as number) ?? min]}
-              onValueChange={([val]) => field.onChange(val)}
-              min={min}
-              max={max}
-              step={step}
-              disabled={disabled}
-            />
-          </FormControl>
-          <FormDescription>{description}</FormDescription>
-          <FormMessage />
-        </FormItem>
-      )}
+            <FormControl>
+              <Slider
+                value={[value]}
+                onValueChange={([val]) => field.onChange(val)}
+                min={min}
+                max={max}
+                step={step}
+                disabled={disabled}
+              />
+            </FormControl>
+            <FormDescription>{description}</FormDescription>
+            <FormMessage />
+          </FormItem>
+        )
+      }}
     />
   )
 }

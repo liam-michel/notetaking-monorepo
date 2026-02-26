@@ -19,7 +19,7 @@ async function main() {
   })
   await fastify.register(fastifyCookie)
   //register auth plugin before trpc plugin so that the user is available in the context
-  await fastify.register(authPlugin, { storage, logger, betterAuth: auth, cache })
+  await fastify.register(authPlugin, { storage, betterAuth: auth, cache })
   await fastify.register(fastifyTRPCPlugin, {
     prefix: '/trpc',
     trpcOptions: {

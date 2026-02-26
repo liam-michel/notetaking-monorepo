@@ -15,18 +15,16 @@ declare module 'fastify' {
 
 export type AuthPluginOptions = {
   storage: Storage
-  logger: Logger
   betterAuth: BetterAuth
   cache: Cache
 }
-const authPluginfn: FastifyPluginAsync<AuthPluginOptions> = async (fastify, { storage, logger, betterAuth }) => {
+const authPluginfn: FastifyPluginAsync<AuthPluginOptions> = async (fastify, { storage, betterAuth }) => {
   fastify.decorateRequest('authUser', null)
   fastify.addHook('onRequest', async (request) => {
-    request.requestLogger = logger.child({
-      requestId: request.id,
+    request.requestLogger = request.log.child({
       url: request.url,
       method: request.method,
-    })
+    }) as unknown as Logger
   })
   fastify.addHook('preHandler', async (request) => {
     //default user to null
