@@ -11,7 +11,14 @@ declare module 'fastify' {
     requestLogger: Logger
   }
 }
-const authPluginfn: FastifyPluginAsync<{ storage: Storage; logger: Logger; betterAuth: BetterAuth }> = async (
+
+export type AuthPluginOptions = {
+  storage: Storage
+  logger: Logger
+  betterAuth: BetterAuth
+  cache: Cache
+}
+const authPluginfn: FastifyPluginAsync<AuthPluginOptions> = async (
   fastify,
   { storage, logger, betterAuth },
 ) => {
@@ -26,6 +33,7 @@ const authPluginfn: FastifyPluginAsync<{ storage: Storage; logger: Logger; bette
   fastify.addHook('preHandler', async (request) => {
     //default user to null
     request.authUser = null
+    //try redis first  
     // Convert Fastify headers to standard Headers object
     const headers = new Headers()
     Object.entries(request.headers).forEach(([key, value]) => {

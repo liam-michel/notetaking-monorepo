@@ -5,6 +5,9 @@ const envSchema = z.object({
   DATABASE_URL: z.string(),
   FRONTEND_URL: z.string(),
   BETTERAUTH_URL: z.string(),
+  REDIS_HOST: z.string(),
+  REDIS_PORT: z.string().transform((val) => parseInt(val, 10)),
+  REDIS_PASSWORD: z.string().optional(),
 })
 
 export type EnvConfigDeps = {

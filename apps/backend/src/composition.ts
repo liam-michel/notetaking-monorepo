@@ -2,6 +2,7 @@
 
 import pino from 'pino'
 
+import { createRedisClient } from './redis/createRedisClient.js'
 import { createBetterAuthSingleton } from './server/auth.js'
 import { createTRPCRouter } from './server/routers/trpc.js'
 import { createStrategyRouter } from './services/strategy/strategy.router.js'
@@ -18,7 +19,14 @@ export async function setupApp() {
   const t = createTRPCRouter()
   //database client
   const dbClient = createPrismaClient(envVars.DATABASE_URL)
+  //redis client
+  const redisClient = createRedisClient({
+    host: envVars.REDIS_HOST,
+    port: envVars.REDIS_PORT,
+    password: envVars.REDIS_PASSWORD,
+  })
   //declare better-auth singleton
+
   const auth = createBetterAuthSingleton({
     db: dbClient,
     baseURL: envVars.BETTERAUTH_URL,
