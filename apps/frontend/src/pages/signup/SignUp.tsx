@@ -17,7 +17,7 @@ export default function Signup() {
           <SignUpForm
             onSubmit={async (data) => {
               mutate(data, {
-                onSuccess: () => navigate({ to: '/dashboard' }),
+                onSuccess: () => navigate({ to: '/' }),
               })
             }}
           />

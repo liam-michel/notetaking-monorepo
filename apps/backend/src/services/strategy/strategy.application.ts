@@ -2,7 +2,7 @@ import type { AddStrategyApplicationInput, EditStrategyApplicationInput, IdInput
 import type { SearchInput } from '@cs2monorepo/shared'
 import type { Logger } from 'pino'
 
-import { Services } from '../create-services.ts'
+import type { Services } from '../create-services.ts'
 
 type StrategyUseCaseDeps = {
   logger: Logger

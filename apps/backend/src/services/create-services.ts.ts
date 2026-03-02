@@ -3,6 +3,7 @@ import { Logger } from 'pino'
 import { Storage } from '../storage/storage'
 import { createStrategyService } from './strategy/strategy.service'
 import { createUserService } from './user/user.service'
+import { createUtilityService } from './utility/utility.service'
 export type Services = ReturnType<typeof createServices>
 
 export type ServiceDeps = {
@@ -15,5 +16,6 @@ export function createServices(deps: ServiceDeps) {
   return {
     strategy: createStrategyService({ storage, logger }),
     user: createUserService({ storage, logger }),
+    utility: createUtilityService({ storage, logger }),
   }
 }

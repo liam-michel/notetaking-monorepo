@@ -7,7 +7,6 @@ import { ModeToggle } from './components/mode-toggle'
 import Signup from './pages/signup/SignUp'
 import Login from './pages/login/Login'
 import { authClient } from './lib/auth-client'
-import About from './pages/about/About'
 import UserStrategies from './pages/user-strategies/UserStrategies'
 import { MainLayout } from './layouts/MainLayout'
 import StrategyDetail from './pages/user-strategy/UserStrategy'
@@ -18,12 +17,13 @@ export interface User {
 }
 export interface RouterContext {
   queryClient: QueryClient
+  user: User | null
 }
 
 const redirectIfAuthenticated = async () => {
   const authResult = await authClient.getSession()
   if (authResult.data?.session) {
-    throw redirect({ to: '/dashboard' })
+    throw redirect({ to: '/' })
   }
 }
 
@@ -53,77 +53,84 @@ const rootRoute = createRootRouteWithContext<RouterContext>()({
     </>
   ),
 })
-const indexRoute = createRoute({
+
+// 1. Public layout — no auth required, passes user or null
+export const mainLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/',
-  component: () => <div>Home</div>,
+  id: 'main',
+  component: MainLayout,
+  beforeLoad: async () => {
+    const authResult = await authClient.getSession()
+    const user = authResult.data?.session
+      ? {
+          id: authResult.data.user.id,
+          name: authResult.data.user.name || '',
+          email: authResult.data.user.email || '',
+        }
+      : null
+    return { user }
+  },
 })
 
-const aboutRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: 'about',
-  component: About,
+// 2. Protected layout — auth required, reuses main layout
+export const protectedLayoutRoute = createRoute({
+  getParentRoute: () => mainLayoutRoute,
+  id: 'protected',
+  beforeLoad: async ({ context }) => {
+    // ← use context instead of redirectIfUnauthenticated
+    if (!context.user) {
+      throw redirect({ to: '/login' })
+    }
+  },
 })
 
-const loginRoute = createRoute({
+export const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'login',
   component: Login,
   beforeLoad: redirectIfAuthenticated,
 })
 
-const signUpRoute = createRoute({
+export const signUpRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'signup',
   component: Signup,
   beforeLoad: redirectIfAuthenticated,
 })
 
-const protectedLayoutRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  id: 'protected',
-  component: MainLayout,
-  beforeLoad: redirectIfUnauthenticated,
-})
 // Dashboard is now a child of the layout, not root
-const dashboardRoute = createRoute({
-  getParentRoute: () => protectedLayoutRoute, // ← parent is layout, not root
-  path: 'dashboard',
+export const dashboardRoute = createRoute({
+  getParentRoute: () => mainLayoutRoute, // ← parent is layout, not root
+  path: '/',
   component: () => <div>Dashboard</div>,
 })
 
-const userStrategiesRoute = createRoute({
+export const userStrategiesRoute = createRoute({
   getParentRoute: () => protectedLayoutRoute,
-  path: 'me',
+  path: 'strategies',
   component: UserStrategies,
 })
 
-const strategyRoute = createRoute({
+export const strategyRoute = createRoute({
   getParentRoute: () => protectedLayoutRoute,
   path: 'strategy/$id',
   component: StrategyDetail,
 })
 
 const routeTree = rootRoute.addChildren([
-  indexRoute,
-  aboutRoute,
   loginRoute,
   signUpRoute,
-  protectedLayoutRoute.addChildren([
-    // ← layout wraps its children
-    dashboardRoute,
-    userStrategiesRoute,
-    strategyRoute,
-  ]),
+  mainLayoutRoute.addChildren([dashboardRoute, protectedLayoutRoute.addChildren([userStrategiesRoute, strategyRoute])]),
 ])
 export const router = createRouter({
   routeTree,
   context: {
     queryClient,
+    user: null,
   },
 })
 
-export { rootRoute, protectedLayoutRoute }
+export { rootRoute }
 declare module '@tanstack/react-router' {
   export interface RegisterRouter {
     router: typeof router

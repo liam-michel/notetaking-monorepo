@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { EconomySchema, MapSchema, SideSchema } from '../schemas/common'
+import { EconomySchema, MapSchema, SideSchema, userIdSchema } from '../schemas/common'
 
 export const AddStrategySchema = z.object({
   name: z
@@ -21,7 +21,7 @@ export const AddStrategySchema = z.object({
 })
 
 export const AddStrategyServiceSchema = AddStrategySchema.extend({
-  userId: z.uuid(),
+  userId: userIdSchema.shape.userId,
 })
 
 export const EditStrategySchema = AddStrategySchema.extend({
@@ -29,7 +29,7 @@ export const EditStrategySchema = AddStrategySchema.extend({
 })
 
 export const EditStrategyServiceSchema = EditStrategySchema.extend({
-  userId: z.uuid(),
+  userIdSchema,
 })
 
 export type AddStrategyInput = z.output<typeof AddStrategySchema>

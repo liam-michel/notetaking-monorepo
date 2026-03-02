@@ -147,7 +147,7 @@ function editStrategy(db: KyselyDB) {
     const map = await db.selectFrom('Map').select('id').where('name', '=', data.map).executeTakeFirst()
     if (!map) throw new Error('Map not found')
 
-    await db
+    const updated = await db
       .updateTable('Strategy')
       .set({
         name: data.name,
@@ -161,9 +161,7 @@ function editStrategy(db: KyselyDB) {
       .returningAll()
       .executeTakeFirst()
 
-    const updated = await getStrategy(db)({ id: data.id })
-    if (!updated) throw new Error('Failed to retrieve updated strategy')
-    return updated
+    return Models['StrategyWithDetails'].parse(updated)
   }
 }
 
@@ -173,7 +171,7 @@ function createStrategy(db: KyselyDB) {
     if (!map) throw new Error('Map not found')
 
     const id = crypto.randomUUID()
-    await db
+    const created = await db
       .insertInto('Strategy')
       .values({
         id,
@@ -187,10 +185,10 @@ function createStrategy(db: KyselyDB) {
         updatedAt: new Date(),
         deletedAt: null,
       })
-      .execute()
-    const created = await getStrategy(db)({ id })
-    if (!created) throw new Error('Failed to retrieve created strategy')
-    return created
+      .returningAll()
+      .executeTakeFirstOrThrow()
+
+    return Models['StrategyWithDetails'].parse(created)
   }
 }
 

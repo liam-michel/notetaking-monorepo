@@ -1,11 +1,7 @@
 import { trpc } from '@/lib/providers/trpc'
-import { useParams } from '@tanstack/react-router'
-import { useMatches } from '@tanstack/react-router'
-
+import { strategyRoute } from '@/router'
 export default function StrategyDetail() {
-  const matches = useMatches()
-  console.log('Matches:', matches) // Log the matches to see the route hierarchy and params
-  const { id } = useParams({ from: '/protected/strategy/$id' })
+  const { id } = strategyRoute.useParams()
   const { data, error, isLoading } = trpc.strategy.getUserStrategyById.useQuery({ id })
 
   if (isLoading) return <div>Loading...</div>

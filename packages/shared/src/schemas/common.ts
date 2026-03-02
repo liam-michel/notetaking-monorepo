@@ -9,6 +9,10 @@ export const IdSchema = z.object({
   id: z.uuid('Invalid ID format'),
 })
 
+export const userIdSchema = z.object({
+  userId: z.uuid('Invalid user ID format'),
+})
+
 export const PaginationSchema = z.object({
   page: z.number().min(1, 'Page must be at least 1').default(1).catch(1),
   limit: z.number().min(1, 'Limit must be at least 1').max(100, 'Limit must be at most 100').default(10).catch(10),

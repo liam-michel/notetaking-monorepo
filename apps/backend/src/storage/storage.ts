@@ -1,10 +1,12 @@
 import { createStrategyStorage, StrategyStorageMethods } from '../services/strategy/strategy.storage'
 import { createUserStorage, UserStorageMethods } from '../services/user/user.storage'
+import { createUtilityStorage, UtilityStorageMethods } from '../services/utility/utility.storage'
 import type { KyselyDB } from './types/types'
 
 export type Storage = Readonly<{
   strategy: StrategyStorageMethods
   user: UserStorageMethods
+  utility: UtilityStorageMethods
   transaction: <T>(callback: (repo: Readonly<Omit<Storage, 'transaction'>>) => Promise<T>) => Promise<T>
 }>
 
@@ -14,6 +16,7 @@ function wrapKyselyDb(db: KyselyDB): Omit<Storage, 'transaction'> {
   return {
     strategy: createStrategyStorage(db),
     user: createUserStorage(db),
+    utility: createUtilityStorage(db),
   }
 }
 

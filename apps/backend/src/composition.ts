@@ -7,6 +7,7 @@ import { createRedisClient } from './redis/createRedisClient.js'
 import { createBetterAuthSingleton } from './server/auth.js'
 import { createTRPCRouter } from './server/routers/trpc.js'
 import { createStrategyRouter } from './services/strategy/strategy.router.js'
+import { createUtilityRouter } from './services/utility/utility.router.js'
 import { createKyselyClient } from './storage/kysely-client.js'
 import { createPostgresStorage } from './storage/storage.js'
 import { parseEnv } from './utils/envConfig.js'
@@ -45,8 +46,14 @@ export async function setupApp() {
     t,
   })
 
+  //utility router
+  const utilityRouter = createUtilityRouter({
+    t,
+  })
+
   const appRouter = t.router({
     strategy: strategyRouter,
+    utility: utilityRouter,
   })
   return {
     t,

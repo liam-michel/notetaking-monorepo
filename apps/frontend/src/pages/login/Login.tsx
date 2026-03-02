@@ -17,7 +17,7 @@ export default function Login() {
           <LoginForm
             onSubmit={async (data) => {
               mutate(data, {
-                onSuccess: () => navigate({ to: '/dashboard' }),
+                onSuccess: () => navigate({ to: '/' }),
               })
             }}
           />

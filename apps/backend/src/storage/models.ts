@@ -45,6 +45,19 @@ const Session = z.object({
   updatedAt: z.date('Updated at must be a date').transform((date) => date.toISOString()),
 })
 
+const Utility = z.object({
+  id: z.string('Utility id must be a string'),
+  strategyId: z.string('Strategy id must be a string'),
+  type: UtilityType,
+  location: z.string('Location must be a string').nullable(),
+  timing: z.string('Timing must be a string').nullable(),
+  order: z
+    .number('Order must be a number')
+    .transform((num) => Math.round(num))
+    .nullable(),
+  role: PlayerRole.nullable(),
+})
+
 const Strategy = z.object({
   id: z.string('Strategy id must be a string'),
   userId: z.string('User id must be a string'),
@@ -94,6 +107,7 @@ export type Account = z.infer<typeof Account>
 export type GameMap = z.infer<typeof GameMap>
 export type Session = z.infer<typeof Session>
 export type Strategy = z.infer<typeof Strategy>
+export type Utility = z.infer<typeof Utility>
 export type StrategyComment = z.infer<typeof StrategyComment>
 export type User = z.infer<typeof User>
 export type Side = z.infer<typeof Side>
@@ -109,6 +123,7 @@ export const Models = {
   GameMap,
   Session,
   Strategy,
+  Utility,
   StrategyComment,
   User,
   Side,
