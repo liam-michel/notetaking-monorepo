@@ -10,6 +10,7 @@ import { authClient } from './lib/auth-client'
 import About from './pages/about/About'
 import UserStrategies from './pages/user-strategies/UserStrategies'
 import { MainLayout } from './layouts/MainLayout'
+import StrategyDetail from './pages/user-strategy/UserStrategy'
 export interface User {
   id: string
   name: string
@@ -91,10 +92,16 @@ const dashboardRoute = createRoute({
   component: () => <div>Dashboard</div>,
 })
 
-const userRoute = createRoute({
+const userStrategiesRoute = createRoute({
   getParentRoute: () => protectedLayoutRoute,
   path: 'me',
   component: UserStrategies,
+})
+
+const strategyRoute = createRoute({
+  getParentRoute: () => protectedLayoutRoute,
+  path: 'strategy/$id',
+  component: StrategyDetail,
 })
 
 const routeTree = rootRoute.addChildren([
@@ -105,7 +112,8 @@ const routeTree = rootRoute.addChildren([
   protectedLayoutRoute.addChildren([
     // ← layout wraps its children
     dashboardRoute,
-    userRoute,
+    userStrategiesRoute,
+    strategyRoute,
   ]),
 ])
 export const router = createRouter({

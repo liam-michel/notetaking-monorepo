@@ -14,6 +14,10 @@ export type StrategyUseCases = ReturnType<typeof createStrategyUseCases>
 export function createStrategyUseCases({ logger, services }: StrategyUseCaseDeps) {
   const log = logger.child({ layer: 'useCase', domain: 'strategy' })
   return {
+    getUserStrategy: async (data: IdInput & { userId: string }) => {
+      log.info('Fetching strategy with id: %o', data.id)
+      return services.strategy.getUserStrategy(data)
+    },
     getUsersStrategies: async (data: IdInput) => {
       log.info('Fetching strategies')
       return services.strategy.getUsersStrategies(data)

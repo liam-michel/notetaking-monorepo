@@ -7,10 +7,9 @@ interface RowActionsProps {
   onDelete: () => void
   isDeleting?: boolean
 }
-
 export function RowActions({ onEdit, onDelete, isDeleting }: RowActionsProps) {
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
       <Button variant="ghost" size="icon" onClick={onEdit}>
         <Pencil className="h-4 w-4" />
       </Button>

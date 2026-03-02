@@ -1,5 +1,6 @@
 import { DataTable } from '@/components/ui/data-table'
 import { columns, StrategyColumn } from '../../../components/strategy-table/columns'
+import { useNavigate } from '@tanstack/react-router'
 
 interface Props {
   data: StrategyColumn[]
@@ -8,5 +9,10 @@ interface Props {
 }
 
 export const StrategiesTable: React.FC<Props> = ({ data, onEdit, onDelete }) => {
-  return <DataTable columns={columns} data={data} meta={{ onEdit, onDelete }} />
+  const navigate = useNavigate()
+
+  const handleView = (item: StrategyColumn) => {
+    navigate({ to: '/strategy/$id', params: { id: item.id } })
+  }
+  return <DataTable columns={columns} data={data} meta={{ onEdit, onDelete, onView: handleView }} />
 }

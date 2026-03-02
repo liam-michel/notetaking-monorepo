@@ -10,6 +10,15 @@ export function createStrategyRouter(deps: StrategyRouterDeps) {
   const { t } = deps
   const { router, protectedProcedure } = t
   return router({
+    getUserStrategyById: protectedProcedure.input(IdSchema).query(({ ctx, input }) => {
+      return ctx.executor.execute(
+        'getUserStrategyById',
+        ctx.useCases.strategy.getUserStrategy({
+          id: input.id,
+          userId: ctx.user.id,
+        }),
+      )
+    }),
     getUsersStrategies: protectedProcedure.query(({ ctx }) => {
       return ctx.executor.execute('getUsersStrategies', ctx.useCases.strategy.getUsersStrategies({ id: ctx.user.id }))
     }),

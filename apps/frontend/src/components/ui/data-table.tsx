@@ -37,7 +37,13 @@ export function DataTable<TData, TValue>({ columns, data, meta }: DataTableProps
         <TableBody>
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() && 'selected'}
+                className="cursor-pointer"
+                onClick={() => (table.options.meta as any)?.onView?.(row.original)}
+              >
+                {' '}
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                 ))}

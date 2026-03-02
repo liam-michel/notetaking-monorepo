@@ -16,6 +16,7 @@ export type StrategyServiceDeps = {
 }
 
 export type StrategyService = {
+  getUserStrategy: (data: IdInput & { userId: string }) => ReturnType<Repo['strategy']['getStrategy']>
   getUsersStrategies: (data: IdInput) => ReturnType<Repo['strategy']['getUsersStrategies']>
   getUsersStrategiesPaginated: (
     data: IdInput & SearchInput,
@@ -24,6 +25,15 @@ export type StrategyService = {
   editStrategy: (data: AddStrategyApplicationInput & IdInput) => ReturnType<Repo['strategy']['editStrategy']>
   softDeleteStrategy: (data: IdInput & { userId: string }) => ReturnType<Repo['strategy']['softDeleteStrategy']>
   deleteStrategy: (data: IdInput & { userId: string }) => ReturnType<Repo['strategy']['deleteStrategy']>
+}
+
+function getUserStrategy({ storage }: StrategyServiceDeps) {
+  return async function (data: IdInput & { userId: string }) {
+    const strategy = await storage.strategy.getStrategy(data)
+    if (!strategy) throw new NotFoundError('Strategy not found')
+    if (strategy.userId !== data.userId) throw new UnauthorizedError('You are not authorized to view this strategy')
+    return strategy
+  }
 }
 
 function getUsersStrategies({ storage }: StrategyServiceDeps) {
@@ -93,6 +103,7 @@ export function createStrategyService(deps: StrategyServiceDeps): StrategyServic
   const { logger, storage } = deps
   const log = logger.child({ layer: 'service', domain: 'strategy' })
   return {
+    getUserStrategy: getUserStrategy({ storage, logger: log }),
     getUsersStrategies: getUsersStrategies({ storage, logger: log }),
     getUsersStrategiesPaginated: getUsersStrategiesPaginated({ storage, logger: log }),
     createStrategy: createStrategy({ storage, logger: log }),
